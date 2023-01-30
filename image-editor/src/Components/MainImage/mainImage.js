@@ -4,8 +4,8 @@ import './mainImage.css';
 import { useSelector } from "react-redux"
 import * as htmlToImage from 'html-to-image';
 import download from 'downloadjs';
-import domtoimage from 'dom-to-image';
-import { saveAs } from 'file-saver';
+// import domtoimage from 'dom-to-image';
+// import { saveAs } from 'file-saver';
 
 
 
@@ -19,15 +19,12 @@ export default function MainImage({ isImage, imageText, textPosition }) {
 
     // const domEl = useRef('');
     const downloadImage = async () => {
-        htmlToImage.toJpeg(document.getElementById('image-id'), { quality: 0.95 })
-        .then(function (dataUrl) {
-            console.log(dataUrl,'dataUrl')
-            var link = document.createElement('a');
-            link.download = 'my-image-name.jpeg';
-            link.href = dataUrl;
-            console.log(link)
-            link.click();
-        });
+        htmlToImage.toPng(document.getElementById('image-id'))
+        .then(dataUrl=> {
+            download(dataUrl,'image-custom.png')
+        }).catch(()=>{
+            console.log("error")
+        })
     };
 
     function getImageStyle() {
@@ -63,7 +60,7 @@ export default function MainImage({ isImage, imageText, textPosition }) {
                             <br />
                         </div>
                         <button style={{ margin: '2%' }} onClick={() => isImage()}>Edit Image</button>
-                        <button onClick={() => { downloadImage(src) }}>Download!</button>
+                        <button onClick={downloadImage}>Download!</button>
                     </>
                 ) : (
                     <h1>Add a new image</h1>
