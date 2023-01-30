@@ -1,0 +1,18 @@
+
+.sidebar-item {
+    cursor: pointer;
+    outline: none;
+    background-color: #DADADA;
+    padding: 1rem;
+    position: relative;
+    transition: background-color 150ms;
+    height: 20vh;
+    border: 1px solid black;
+    margin: 2.5%;
+    width: 40%;
+  }
+
+
+.sidebar-item:hover, .sidebar-item:focus {
+background-color: #8a8a8a;
+}

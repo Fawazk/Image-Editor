@@ -1,0 +1,35 @@
+.image-container {
+    padding: 5%;
+    height: 100vh;
+    width: 70vw;
+    text-align: center;
+    margin: auto;
+}
+
+.main-image {
+    padding: 5%;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-class {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    height: 250px;
+    width: 250px;
+    margin-left: 35%;
+    overflow: hidden;
+}
+
+.edit-image{
+    position: absolute;
+    
+}
+
+.imageTxt {
+    font-variant: normal;
+    position: relative;
+    color: red;
+}
