@@ -2,63 +2,74 @@ import React, { useEffect, useState, useRef } from 'react'
 import ListImages from '../ListImages/listImages';
 import './mainImage.css';
 import { useSelector } from "react-redux"
-import * as htmlToImage from 'html-to-image';
-import download from 'downloadjs';
+// import * as htmlToImage from 'html-to-image';
+// import download from 'downloadjs';
 // import domtoimage from 'dom-to-image';
-import { saveAs } from 'file-saver';
+// import { saveAs } from 'file-saver';
 // import b64toBlob from 'b64-to-blob';
 import html2canvas from 'html2canvas';
-
+import { AddeditImageSubmit } from '../../apiCalls/axios'
 
 export default function MainImage({ isImage, imageText, textPosition }) {
     const options = useSelector(state => state.changeOption.value)
     const [src, setSrc] = useState('');
+    const [temp,setTemp] = useState('')
 
     const handleFileChange = (e) => {
+        console.log(e.target.files[0],'e.target.files[0]')
         setSrc(URL.createObjectURL(e.target.files[0]))
+        setTemp(e.target.files[0])
     }
 
-    const domEl = useRef(null);
-    const downloadImage = async () => {
-        // const dataUrl = await htmlToImage.toJpeg(document.getElementById('image-id'));
-        // console.log(dataUrl,'dataUrl')
-        // var blob = b64toBlob(dataUrl)
-        // // download image
-        // const link = document.createElement('a');
-        // link.download = 'html-to-img.jpeg';
-        // link.href = URL.createObjectURL(blob);
-        // console.log(link.href,'link.href')
-        // link.click();
 
-        // htmlToImage.toPng(document.getElementById('image-id'))
-        //     .then(dataURI => {
-        //         console.log(dataURI)
-        //         download(dataURI, 'image.png')
-        //     })
-        //     .catch(() => console.log("Error"))
-        const canvas = await html2canvas(document.getElementById('image-id'));
-        const blob = b64toBlob(canvas.toDataURL("image/png", 1.0))
+    function getImageStyle() {
+        const filters = options.map(option => {
+            return `${option.property}(${option.value}${option.unit})`
+        })
+        return { filter: filters.join(' ') }
+    }
+
+    const getImageDataNofilter = () => {
+        const filter = getImageStyle()
+        console.log(filter.filter, 'filter.filter')
+        return filter.filter
+    }
+
+    const handleEditedImage = (base64image) => {
+        console.log(base64image,'bs64image')
+        const blobimage=b64toBlob(base64image)
+        const fileName = blobToFile(blobimage)
+        const nameImage = `image_${(new Date().toJSON().slice(0,10))}.jpeg`
+        console.log(typeof fileName,'filename')
+        const data = new FormData();
+        data.append('edit_image', fileName,nameImage);
+        console.log(data,'data')
+        AddeditImageSubmit(data)
+    }
+
+    const downloadImage = async () => {
+        const node = await html2canvas(document.getElementById('image-id'))
+        console.log(node, 'node')
+        const dataURI = node.toDataURL("image/png", 1.0);
+        console.log(dataURI, 'dataUrl')
+        const blob = b64toBlob(dataURI)
         console.log(blob, 'blob')
-        var ctx = canvas.getContext('2d');
-        // var imageData = ctx.getImageData(0,0,canvas.width,canvas.height)
-        // ctx.filter =
-        const fileName = blobToFile(blob)
-        
-        // console.log(fileName, 'fileName')
-        // const image = canvas.toDataURL();
-        // downloadImg(image, 'image.png');
+        const file = blobToFile(blob)
+        console.log(file, 'file')
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = URL.createObjectURL(file);
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.filter = getImageDataNofilter();
+            ctx.drawImage(img, 0, 0);
+            handleEditedImage(canvas.toDataURL())
+        };
     };
-    // const downloadImg = (blob, fileName) => {
-    //     const fakeLink = window.document.createElement("a");
-    //     fakeLink.style = "display:none;";
-    //     fakeLink.download = fileName;
-    //     fakeLink.href = blob;
-    //     document.body.appendChild(fakeLink);
-    //     console.log(fakeLink)
-    //     // fakeLink.click();
-    //     document.body.removeChild(fakeLink);
-    //     fakeLink.remove();
-    // };
+
 
     function b64toBlob(dataURI) {
         var byteString = atob(dataURI.split(',')[1]);
@@ -74,12 +85,6 @@ export default function MainImage({ isImage, imageText, textPosition }) {
         return new File([theBlob], fileName, { lastModified: new Date().getTime(), type: theBlob.type })
     }
 
-    function getImageStyle() {
-        const filters = options.map(option => {
-            return `${option.property}(${option.value}${option.unit})`
-        })
-        return { filter: filters.join(' ') }
-    }
     return (
         <div className='image-container'>
             <button className="btn" color="inherit" variant="contained"
@@ -97,7 +102,7 @@ export default function MainImage({ isImage, imageText, textPosition }) {
             <div className="main-image">
                 {src ? (
                     <>
-                        <div className='image-class' ref={domEl} id="image-id">
+                        <div className='image-class' id="image-id">
                             <img src={src} className="edit-image" width="250px" height="250px" alt="Image to edit" style={getImageStyle()}></img>
                             <p className='imageTxt' style={{
                                 left: `${textPosition.left}px`,
@@ -106,7 +111,7 @@ export default function MainImage({ isImage, imageText, textPosition }) {
                             <br />
                         </div>
                         <button style={{ margin: '2%' }} onClick={() => isImage()}>Edit Image</button>
-                        <button onClick={()=>downloadImage()}>Save Image</button>
+                        <button onClick={() => downloadImage()}>Save Image</button>
                     </>
                 ) : (
                     <h1>Add a new image</h1>
